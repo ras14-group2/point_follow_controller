@@ -50,10 +50,10 @@ public:
             motorMsg.linear.x = 0.0;
         }
         else if(distance < 0.5){
-            motorMsg.linear.x = -0.2;
+            motorMsg.linear.x = -0.5;
         }
         else if(distance > 0.6){
-            motorMsg.linear.x = 0.2;
+            motorMsg.linear.x = 0.5;
         }
         else{
             motorMsg.linear.x = 0.0;
