@@ -56,7 +56,7 @@ public:
             motorMsg.linear.x = 0.2;
         }
         else{
-            motorMsg.linear.x = 0.0;
+            motorMsg.linear.x = 0.0;l
         }
 
 
