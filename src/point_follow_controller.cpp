@@ -52,7 +52,7 @@ public:
         else if(distance < 0.5){
             motorMsg.linear.x = -0.5;
         }
-        else if(distance > 0.6){
+        else if(distance > 0.8){
             motorMsg.linear.x = 0.5;
         }
         else{
@@ -80,7 +80,7 @@ int main(int argc, char **argv){
 
     PointFollowController pfController;
 
-    ros::Rate loop_rate(5);
+    ros::Rate loop_rate(10);
 
     while(ros::ok()){
 
