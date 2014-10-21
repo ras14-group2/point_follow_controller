@@ -12,10 +12,10 @@ private:
     ros::Subscriber sub;
     ros::Publisher pub;
 
-    double linearScaler;
-    double angularScaler;
+//    double linearScaler;
+//    double angularScaler;
 
-    double distanceOffset;
+//    double distanceOffset;
 
 public:
     PointFollowController(){
@@ -26,10 +26,10 @@ public:
         sub = nh.subscribe("/hand_detector/target", 1, &PointFollowController::pointMsgCallback, this);
         pub = nh.advertise<geometry_msgs::Twist>("motor_controller/twist", 1);
 
-        linearScaler = 1.0;
-        angularScaler = 0.0;
+        //linearScaler = 1.0;
+        //angularScaler = 0.0;
 
-        distanceOffset = 0.4;
+        //distanceOffset = 0.4;
 
         return;
     }
@@ -59,14 +59,7 @@ public:
             motorMsg.linear.x = 0.0;
         }
 
-
-//        if(distance > 0){
-//            motorMsg.linear.x = linearScaler * (distance - distanceOffset);
-//        }
-//        else{
-//            motorMsg.linear.x = 0.0;
-//        }
-        motorMsg.angular.z = angularScaler * targetPoint.x;
+        motorMsg.angular.z = std::atan(targetPoint.x / targetPoint.z);
 
         pub.publish(motorMsg);
 
