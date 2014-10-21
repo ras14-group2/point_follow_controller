@@ -49,17 +49,26 @@ public:
         if(distance <= 0){
             motorMsg.linear.x = 0.0;
         }
-        else if(distance < 0.5){
-            motorMsg.linear.x = -0.5;
+        else if(distance < 0.4){
+            motorMsg.linear.x = -0.2;
         }
-        else if(distance > 0.8){
-            motorMsg.linear.x = 0.5;
+        else if(distance > 0.5){
+            motorMsg.linear.x = 0.3;
         }
         else{
             motorMsg.linear.x = 0.0;
         }
 
-        motorMsg.angular.z = std::atan(targetPoint.x / targetPoint.z);
+        //motorMsg.angular.z = - std::max(-0.3, std::min(0.3, std::atan(targetPoint.x / targetPoint.z)));
+        if(targetPoint.x > 0.05){
+        	motorMsg.angular.z = -0.05;
+        }
+        else if(targetPoint.x < -0.05){
+        	motorMsg.angular.z = 0.05;
+        }
+        else{
+        	motorMsg.angular.z = 0.0;
+        }
 
         pub.publish(motorMsg);
 
