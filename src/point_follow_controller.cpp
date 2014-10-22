@@ -6,10 +6,6 @@
 
 #include <cmath>
 
-
-#define D 0.5
-
-
 class PointFollowController{
 
 private:
@@ -18,10 +14,7 @@ private:
     ros::Subscriber sub;
     ros::Publisher pub, distPub;
 
-//    double linearScaler;
-//    double angularScaler;
-
-//    double distanceOffset;
+    double D;
 
 public:
     PointFollowController(){
@@ -34,10 +27,7 @@ public:
         
         distPub = nh.advertise<std_msgs::Float64>("/psdistance", 1);
 
-        //linearScaler = 1.0;
-        //angularScaler = 0.0;
-
-        //distanceOffset = 0.4;
+        D = 0.5; //distance offset
 
         return;
     }
@@ -56,14 +46,13 @@ public:
 
         if(distance <= 0){
             motorMsg.linear.x = 0.0;
-            std::cerr << "first if" << std::endl;
+//            ROS_INFO("distance <= 0");
         }
         else if(fabs(distance-D) < 0.05){
             motorMsg.linear.x = 0;
-            std::cerr << "second if" << std::endl;
-            std::cerr << "abs(distance-D) is: " << abs(distance-D) << std::endl;
-            std::cerr << "distance " << distance << std::endl;
-            std::cerr << "D is: " << D << std::endl;
+//            ROS_INFO("abs(distance-D) is: %f", abs(distance-D));
+//            ROS_INFO("distance: %f", distance);
+//            ROS_INFO("D is %f", D);
         }
         else if(distance > D+0.15){
             motorMsg.linear.x = 0.4;
@@ -75,8 +64,6 @@ public:
         } else if (distance < D-0.05) {
         	motorMsg.linear.x = -0.2;
         }
-
-        //motorMsg.angular.z = - std::max(-0.3, std::min(0.3, std::atan(targetPoint.x / targetPoint.z)));
         
         double angle = atan(targetPoint.x / targetPoint.z);
         
@@ -95,23 +82,6 @@ public:
         else{
         	motorMsg.angular.z = 0.0;
         }
-        
-        /*
-        if(targetPoint.x > 0.05){
-        	motorMsg.angular.z = -0.09;
-        }
-        else if(targetPoint.x < -0.05){
-        	motorMsg.angular.z = 0.09;
-        	if (targetPoint.x < -0.2) {
-        		motorMsg
-        	}
-        }
-        else{
-        	motorMsg.angular.z = 0.0;
-        }
-        */
-        
-        
 
         pub.publish(motorMsg);
         
@@ -119,9 +89,8 @@ public:
         distmsg.data = distance;
         distPub.publish(distmsg);
         
-        
-        std::cerr << "linear speed is: " << motorMsg.linear.x << std::endl;
-        std::cerr << "distance is: " << distance << std::endl;
+//        ROS_INFO("linear speed is: %f", motorMsg.linear.x);
+//        ROS_INFO("distance is: %f", distance);
 
         return;
     }
