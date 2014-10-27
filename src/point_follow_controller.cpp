@@ -1,6 +1,8 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Twist.h>
+#include <std_msgs/Float64.h>
+#include <iostream>
 
 #include <cmath>
 
@@ -10,12 +12,9 @@ private:
     geometry_msgs::Point targetPoint;
     ros::NodeHandle nh;
     ros::Subscriber sub;
-    ros::Publisher pub;
+    ros::Publisher pub, distPub;
 
-    double linearScaler;
-    double angularScaler;
-
-    double distanceOffset;
+    double D;
 
 public:
     PointFollowController(){
@@ -25,11 +24,10 @@ public:
 
         sub = nh.subscribe("/hand_detector/target", 1, &PointFollowController::pointMsgCallback, this);
         pub = nh.advertise<geometry_msgs::Twist>("motor_controller/twist", 1);
+        
+        distPub = nh.advertise<std_msgs::Float64>("/psdistance", 1);
 
-        linearScaler = 1.0;
-        angularScaler = 0.0;
-
-        distanceOffset = 0.4;
+        D = 0.5; //distance offset
 
         return;
     }
@@ -46,16 +44,53 @@ public:
 
         geometry_msgs::Twist motorMsg;
 
-
-        if(distance > 0){
-            motorMsg.linear.x = linearScaler * (distance - distanceOffset);
+        if(distance <= 0){
+            motorMsg.linear.x = 0.0;
+//            ROS_INFO("distance <= 0");
+        }
+        else if(fabs(distance-D) < 0.05){
+            motorMsg.linear.x = 0;
+//            ROS_INFO("abs(distance-D) is: %f", abs(distance-D));
+//            ROS_INFO("distance: %f", distance);
+//            ROS_INFO("D is %f", D);
+        }
+        else if(distance > D+0.15){
+            motorMsg.linear.x = 0.4;
+        }
+        else if(distance > D+0.05){
+            motorMsg.linear.x = 0.2;
+        } else if (distance < D-0.15) {
+        	motorMsg.linear.x = -0.4;
+        } else if (distance < D-0.05) {
+        	motorMsg.linear.x = -0.2;
+        }
+        
+        double angle = atan(targetPoint.x / targetPoint.z);
+        
+        if(angle > 0.05){
+        	motorMsg.angular.z = -0.09;
+        	if (angle > 0.25) {
+        		motorMsg.angular.z = -0.2;
+        	}
+        }
+        else if(angle < -0.05){
+        	motorMsg.angular.z = 0.09;
+        	if (angle < -0.25) {
+        		motorMsg.angular.z = 0.2;
+        	}
         }
         else{
-            motorMsg.linear.x = 0.0;
+        	motorMsg.angular.z = 0.0;
         }
-        motorMsg.angular.z = angularScaler * targetPoint.x;
 
         pub.publish(motorMsg);
+        
+        std_msgs::Float64 distmsg;
+        distmsg.data = distance;
+        distPub.publish(distmsg);
+        
+//        ROS_INFO("linear speed is: %f", motorMsg.linear.x);
+//        ROS_INFO("distance is: %f", distance);
 
         return;
     }
@@ -67,7 +102,7 @@ int main(int argc, char **argv){
 
     PointFollowController pfController;
 
-    ros::Rate loop_rate(5);
+    ros::Rate loop_rate(10);
 
     while(ros::ok()){
 
